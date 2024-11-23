@@ -58,7 +58,30 @@ pipeline {
 		    withKubeConfig([credentialsId: 'kubelogin']) {
 				sh('zap.sh -cmd -quickurl http://$(kubectl get services/easybuggy --namespace=devsecops -o json| jq -r ".status.loadBalancer.ingress[] | .hostname") -quickprogress -quickout ${WORKSPACE}/zap_report.html')
 				archiveArtifacts artifacts: 'zap_report.html'
-		    }
+ // Parse ZAP Report and create JIRA issues
+                        def zapReport = readFile("${WORKSPACE}/zap_report.html") // Read the ZAP report
+                        def vulnerabilities = parseZapReport(zapReport) // Parse vulnerabilities (method defined below)
+
+                        // Create JIRA issues for each vulnerability
+                        def jiraServer = 'JIRA_SERVER' // JIRA server configuration in Jenkins
+                        for (vuln in vulnerabilities) {
+                            def testIssue = [
+                                fields: [
+                                    project: [id: '10000'], 
+                                    summary: "Vulnerability Found: ${vuln.name}",
+                                    description: """
+                                        Severity: ${vuln.severity}
+                                        URL: ${vuln.url}
+                                        Description: ${vuln.description}
+                                    """,
+                                    issuetype: [name: 'Bug'], 
+                                    assignee: [username: 'Satyavarssheni']
+                                ]
+                            ]
+                            def response = jiraNewIssue(issue: testIssue, site: jiraServer)
+                            echo "Created JIRA Ticket: ${response.data.key}"
+                        }
+                    }
 	     }
        } 
   }
