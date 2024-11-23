@@ -56,6 +56,7 @@ pipeline {
 	stage('RunDASTUsingZAP') {
           steps {
 		    withKubeConfig([credentialsId: 'kubelogin']) {
+				script{
 				sh('zap.sh -cmd -quickurl http://$(kubectl get services/easybuggy --namespace=devsecops -o json| jq -r ".status.loadBalancer.ingress[] | .hostname") -quickprogress -quickout ${WORKSPACE}/zap_report.html')
 				archiveArtifacts artifacts: 'zap_report.html'
 				 // Parse ZAP Report and create JIRA issues
@@ -82,9 +83,10 @@ pipeline {
                             echo "Created JIRA Ticket: ${response.data.key}"
                         }        
                     }
+			}
 	     }
-       } 
-  }
+		}
+    } 
 }
 def parseZapReport(reportContent) {
     // Placeholder function: Parse ZAP report and return a list of vulnerabilities
