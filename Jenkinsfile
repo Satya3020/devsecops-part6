@@ -58,13 +58,13 @@ pipeline {
 		    withKubeConfig([credentialsId: 'kubelogin']) {
 				sh('zap.sh -cmd -quickurl http://$(kubectl get services/easybuggy --namespace=devsecops -o json| jq -r ".status.loadBalancer.ingress[] | .hostname") -quickprogress -quickout ${WORKSPACE}/zap_report.html')
 				archiveArtifacts artifacts: 'zap_report.html'
- // Parse ZAP Report and create JIRA issues
-                        def zapReport = readFile("${WORKSPACE}/zap_report.html") // Read the ZAP report
-                        def vulnerabilities = parseZapReport(zapReport) // Parse vulnerabilities (method defined below)
+				 // Parse ZAP Report and create JIRA issues
+                def zapReport = readFile("${WORKSPACE}/zap_report.html") // Read the ZAP report
+                def vulnerabilities = parseZapReport(zapReport) // Parse vulnerabilities (method defined below)
 
-                        // Create JIRA issues for each vulnerability
-                        def jiraServer = 'JIRA_SERVER' // JIRA server configuration in Jenkins
-                        for (vuln in vulnerabilities) {
+                // Create JIRA issues for each vulnerability
+                def jiraServer = 'JIRA_SERVER' // JIRA server configuration in Jenkins
+                for (vuln in vulnerabilities) {
                             def testIssue = [
                                 fields: [
                                     project: [id: '10000'], 
@@ -80,9 +80,23 @@ pipeline {
                             ]
                             def response = jiraNewIssue(issue: testIssue, site: jiraServer)
                             echo "Created JIRA Ticket: ${response.data.key}"
-                        }
+                        }        
                     }
 	     }
        } 
   }
+}
+def parseZapReport(reportContent) {
+    // Placeholder function: Parse ZAP report and return a list of vulnerabilities
+    // Each vulnerability contains 'name', 'severity', 'url', and 'description'.
+    // Actual implementation depends on the ZAP report format (e.g., XML or HTML parsing).
+    def vulnerabilities = []
+    // Example vulnerability for demonstration
+    vulnerabilities << [
+        name: "SQL Injection",
+        severity: "High",
+        url: "http://example.com/vulnerable-endpoint",
+        description: "The application is vulnerable to SQL injection."
+    ]
+    return vulnerabilities
 }
