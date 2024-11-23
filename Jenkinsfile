@@ -6,7 +6,7 @@ pipeline {
    stages{
     stage('CompileandRunSonarAnalysis') {
             steps {	
-		sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=devsecops-sanjju_devsecops -Dsonar.organization=devsecops-sanjju -Dsonar.host.url=https://sonarcloud.io -Dsonar.token=3592373e51ba166052365613cb1cb882e7fb667f'
+		sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=devsecops-org-key_devsecops-project -Dsonar.organization=devsecops-org-key -Dsonar.host.url=https://sonarcloud.io -Dsonar.token=9d38ca272aaa7fae0e6bc815d7ea5313eac39d92'
 			}
     }
 
@@ -31,7 +31,7 @@ pipeline {
 	stage('Push') {
             steps {
                 script{
-                    docker.withRegistry('https://140023392805.dkr.ecr.ap-southeast-1.amazonaws.com', 'ecr:ap-southeast-1:aws-credentials') {
+                    docker.withRegistry('https://390402541966.dkr.ecr.us-east-2.amazonaws.com', 'ecr:us-east-2:aws-credentials') {
                     app.push("latest")
                     }
                 }
